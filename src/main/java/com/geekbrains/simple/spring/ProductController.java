@@ -3,6 +3,7 @@ package com.geekbrains.simple.spring;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,32 +23,20 @@ public class ProductController {
     public List<Product> getAllProducts() {
         return productRepository.findAll();
     }
-
-    @GetMapping("/{id}")
-    public Product getProductById(@PathVariable Long id) {
-        return productRepository.findById(id).get();
+    //http://localhost:8189/app/products/filtered?min_price=100
+    @GetMapping("/filtered")
+    public List<Product> getProductsPriceGreater(Integer min_price) {
+        return productRepository.findByPriceGreaterThan(min_price);
     }
-
-    @PostMapping
-    public Product saveProduct(@RequestBody Product product) {
-        product.setId(null);
-        return productRepository.save(product);
+    //http://localhost:8189/app/products/delete/1
+    @PostMapping("/delete/{id}")
+    public void deleteById(@PathVariable Long id) {
+        productRepository.deleteById(id);
     }
-
-    @GetMapping("/increase_cost_by_10/{id}")
-    public void increaseCost(@PathVariable Long id) {
-        Product p = productRepository.findById(id).get();
-        p.setPrice(p.getPrice() + 10);
-        productRepository.save(p);
-    }
-
-    @GetMapping("/count")
-    public Long getProductsCount() {
-        return productRepository.count();
-    }
-
-    @GetMapping("/cheap")
-    public List<Product> getAllCheapProducts() {
-        return productRepository.requestAllCheapProducts();
+    //http://localhost:8189/app/products/2/change_title?title=BREAD
+    @Transactional
+    @PutMapping("/{id}/change_title")
+    public void changeTitleByid(@PathVariable Long id, @RequestParam String title) {
+        productRepository.updateTitleById(title, id);
     }
 }
